@@ -4,6 +4,7 @@
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --accent-color: #8b5cf6;
+    --accent-color-rgb: 139, 92, 246;
     /* Violet */
     --accent-hover: #7c3aed;
     --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -23,6 +24,7 @@
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --accent-color: #6366f1;
+    --accent-color-rgb: 99, 102, 241;
     --accent-hover: #4f46e5;
     --gradient-bg: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     --modal-bg: #ffffff;
@@ -38,6 +40,7 @@
     --text-primary: #f8fafc;
     --text-secondary: #a1a1aa;
     --accent-color: #a855f7;
+    --accent-color-rgb: 168, 85, 247;
     --accent-hover: #9333ea;
     --gradient-bg: linear-gradient(135deg, #000000 0%, #18181b 100%);
     --modal-bg: #18181b;
@@ -554,6 +557,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: filter 0.1s ease;
 }
 
 .camera-controls {
@@ -563,31 +567,46 @@ body {
 }
 
 .capture-btn {
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    border: 4px solid white;
-    padding: 4px;
+    background: rgba(var(--accent-color-rgb), 0.1);
+    border: 4px solid var(--accent-color);
+    padding: 6px;
     cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .capture-btn:hover {
     transform: scale(1.05);
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(var(--accent-color-rgb), 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .capture-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
 }
 
 .capture-inner {
     display: block;
     width: 100%;
     height: 100%;
-    background: white;
+    background: var(--accent-color);
     border-radius: 50%;
+    transition: transform 0.1s ease;
+}
+
+[data-theme="light"] .capture-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: var(--accent-color);
+}
+
+[data-theme="light"] .capture-inner {
+    background: var(--accent-color);
 }
 
 /* Slider Controls */

@@ -1018,22 +1018,41 @@ document.addEventListener('DOMContentLoaded', () => {
     captureBtn.addEventListener('click', () => {
         if (!cameraStream) return;
 
+        // Visual flash feedback
+        cameraVideo.style.filter = 'brightness(2) contrast(0.5)';
+        setTimeout(() => { cameraVideo.style.filter = ''; }, 100);
+
         const context = cameraCanvas.getContext('2d');
-        cameraCanvas.width = cameraVideo.videoWidth;
-        cameraCanvas.height = cameraVideo.videoHeight;
-        context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+        const width = cameraVideo.videoWidth;
+        const height = cameraVideo.videoHeight;
 
-        const capturedData = cameraCanvas.toDataURL('image/jpeg', 0.8);
+        if (width === 0 || height === 0) {
+            console.error("Camera dimensions are 0. Video might not be ready.");
+            alert("カメラの準備ができていません。もう一度お試しください。");
+            return;
+        }
 
-        // Use standard compression/preview logic
-        imagePreview.src = capturedData;
-        imagePreview.classList.remove('hidden');
-        imagePreviewContainer.querySelector('span').style.opacity = '0';
+        cameraCanvas.width = width;
+        cameraCanvas.height = height;
+        context.drawImage(cameraVideo, 0, 0, width, height);
 
-        // Provide feedback and switch back to file tab to show the preview?
-        // Actually, we can just show it on the card. 
-        // For UX: Switch to "file" tab so they can see the full preview and add tags/memo.
-        tabs[0].click();
+        try {
+            const capturedData = cameraCanvas.toDataURL('image/jpeg', 0.8);
+            console.log('Image Captured:', capturedData.substring(0, 50) + '...');
+
+            // Use standard compression/preview logic
+            imagePreview.src = capturedData;
+            imagePreview.classList.remove('hidden');
+            // Hide BOTH spans in the upload label
+            imagePreviewContainer.querySelectorAll('span').forEach(s => s.style.opacity = '0');
+
+            // Provide feedback and switch back to file tab to show the preview
+            // This ensures currentTab becomes 'file' and submit handler works correctly
+            tabs[0].click();
+        } catch (e) {
+            console.error("Capture Failed:", e);
+            alert("画像の取得に失敗しました。");
+        }
     });
 
     addBtn.addEventListener('click', () => {
@@ -1402,29 +1421,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let finalImage = imagePreview.src;
         let linkUrl = null;
 
+        console.log('Submitting Item. currentTab:', currentTab, 'finalImage (preview exists):', !!finalImage && !imagePreview.classList.contains('hidden'));
+
         if (currentTab === 'link') {
             linkUrl = document.getElementById('linkInput').value.trim();
             if (!linkUrl) {
                 alert('URLを入力してください');
                 return;
             }
-            // If user fetched image, finalImage is set.
-            // If not, or if fetch failed, use placeholder.
-            if (!finalImage || finalImage === window.location.href || finalImage.includes('display: none')) { // Check visibility roughly
-                finalImage = generateLinkPlaceholder();
-            }
-            // Ensure we don't accidentally use the placeholder from a previous file upload if we switched tabs?
-            // Actually, resetImagePreview called on modal open clears it.
-            // If user uploads image on Tab A, then switches to Tab B -> we should probably clear imagePreview or handle it.
-            // For simplicity: If Tab B (Link), we trust imagePreview ONLY IF it was set by fetch (which we can't easily track without state, but if user clicked fetch it replaces src).
-            // Let's assume if imagePreview is hidden, we use placeholder.
             if (imagePreview.classList.contains('hidden')) {
                 finalImage = generateLinkPlaceholder();
             }
         } else {
-            // File Tab
+            // File or Camera Tab (Camera switches to File after capture)
             if (!finalImage || finalImage === window.location.href || imagePreview.classList.contains('hidden')) {
-                alert('画像を選択してください');
+                alert('画像を選択、またはカメラで撮影してください');
                 return;
             }
         }
@@ -1439,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             createdAt: new Date().toISOString()
         };
 
+        console.log('Adding Item:', newItem.id);
         addItem(newItem);
         closeModal();
     });
