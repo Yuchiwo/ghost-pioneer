@@ -804,6 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Rendering ---
     function render() {
+        const scrollY = window.scrollY;
         renderFilterBar();
         board.querySelectorAll('.collection-card').forEach(el => el.remove());
         const displayItems = getDisplayItems();
@@ -822,6 +823,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = createCardElement(item);
                 board.appendChild(card);
             });
+        }
+
+        // Restore scroll position
+        if (scrollY > 0) {
+            window.scrollTo(0, scrollY);
         }
     }
 
@@ -1297,7 +1303,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item) {
                 item.image = compressed;
                 await db.saveItem(item);
-                render();
+
+                // Targeted DOM update
+                const card = board.querySelector(`.collection-card[data-id="${editingItemId}"]`);
+                if (card) {
+                    const img = card.querySelector('.card-image');
+                    if (img) img.src = compressed;
+                }
             }
         } catch (err) {
             console.error("Image update failed", err);
@@ -1534,7 +1546,14 @@ document.addEventListener('DOMContentLoaded', () => {
             item.memo = newMemo;
 
             await db.saveItem(item);
-            render(); // Or in-place update for text is easy too, but render is fine.
+
+            // Targeted update (Replace textarea back with paragraph)
+            const p = document.createElement('p');
+            p.className = item.memo ? 'card-memo' : 'card-memo placeholder';
+            p.dataset.id = id;
+            p.textContent = item.memo ? item.memo : 'ひとことメモを追加する...';
+            p.addEventListener('click', () => startEditingMemo(id, p));
+            textarea.replaceWith(p);
         });
     }
 
