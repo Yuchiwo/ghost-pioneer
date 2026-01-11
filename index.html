@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Outfit:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=64">
+    <link rel="stylesheet" href="styles.css?v=65">
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
@@ -71,6 +71,9 @@
                 <div class="action-buttons">
                     <button id="syncBtn" class="icon-btn hidden" title="クラウドに同期（アップロード）">
                         <span class="material-icons-round">cloud_upload</span>
+                    </button>
+                    <button id="manageTagsBtn" class="icon-btn" title="タグを管理">
+                        <span class="material-icons-round">sell</span>
                     </button>
                     <button id="backupBtn" class="icon-btn" title="データを保存 (バックアップ)">
                         <span class="material-icons-round">download</span>
@@ -191,6 +194,24 @@
         </div>
     </div>
 
+    <!-- Tag Management Modal -->
+    <div id="tagManagerModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>タグの管理</h2>
+                <button id="closeTagManagerBtn" class="close-btn">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle" style="margin-bottom: 16px;">既存のタグの名前変更や削除ができます。変更はすべてのアイテムに反映されます。</p>
+                <div id="tagManagerList" class="tag-manager-list">
+                    <!-- Dynamic tag list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Image Lightbox -->
     <div class="lightbox-overlay hidden" id="lightbox">
         <button class="lightbox-close" id="lightboxClose">
@@ -199,7 +220,7 @@
         <img id="lightboxImage" src="" alt="Full size preview">
     </div>
 
-    <script type="module" src="script.js?v=64"></script>
+    <script type="module" src="script.js?v=65"></script>
 </body>
 
 </html>

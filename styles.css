@@ -1379,3 +1379,79 @@ textarea:focus {
         justify-content: center;
     }
 }
+
+.tag-action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: color 0.2s, transform 0.2s;
+    padding: 4px;
+}
+
+.tag-action-btn:hover {
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.tag-action-btn.delete:hover {
+    color: #ef4444;
+}
+
+.tag-action-btn.confirm:hover {
+    color: #22c55e;
+}
+
+/* Tag Manager List Styles */
+.tag-manager-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-top: 8px;
+}
+
+.tag-manager-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.2s;
+}
+
+.tag-manager-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.tag-manager-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-manager-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--text-primary);
+    font-family: var(--font-jp);
+    font-size: 0.95rem;
+}
+
+.tag-manager-actions {
+    display: flex;
+    gap: 8px;
+}

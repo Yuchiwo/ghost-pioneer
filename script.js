@@ -249,6 +249,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cameraCanvas = document.getElementById('cameraCanvas');
     const captureBtn = document.getElementById('captureBtn');
 
+    // Tag Management Elements
+    const manageTagsBtn = document.getElementById('manageTagsBtn');
+    const tagManagerModal = document.getElementById('tagManagerModal');
+    const closeTagManagerBtn = document.getElementById('closeTagManagerBtn');
+    const tagManagerList = document.getElementById('tagManagerList');
+
     // Lightbox Elements
     const lightbox = document.getElementById('lightbox');
     const lightboxImage = document.getElementById('lightboxImage');
@@ -1035,6 +1041,164 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
+
+    // Tag Manager Navigation
+    manageTagsBtn.addEventListener('click', () => {
+        tagManagerModal.classList.remove('hidden');
+        renderTagManagerList();
+    });
+
+    closeTagManagerBtn.addEventListener('click', () => {
+        tagManagerModal.classList.add('hidden');
+    });
+
+    tagManagerModal.addEventListener('click', (e) => {
+        if (e.target === tagManagerModal) tagManagerModal.classList.add('hidden');
+    });
+
+    function renderTagManagerList() {
+        const allTags = getAllUniqueTags();
+        tagManagerList.innerHTML = '';
+
+        if (allTags.length === 0) {
+            tagManagerList.innerHTML = '<p class="subtitle" style="text-align: center; opacity: 0.6; margin-top: 20px;">使用されているタグはありません。</p>';
+            return;
+        }
+
+        allTags.forEach(tag => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'tag-manager-item';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'tag-manager-name';
+            nameSpan.textContent = `#${tag}`;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'tag-manager-actions';
+
+            // Edit
+            const editBtn = document.createElement('button');
+            editBtn.className = 'tag-action-btn';
+            editBtn.innerHTML = '<span class="material-icons-round">edit</span>';
+            editBtn.title = '名前を変更';
+
+            editBtn.addEventListener('click', () => {
+                startRenamingTag(tag, itemDiv);
+            });
+
+            // Delete
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'tag-action-btn delete';
+            deleteBtn.innerHTML = '<span class="material-icons-round">delete</span>';
+            deleteBtn.title = 'タグを削除';
+
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm(`タグ「#${tag}」をすべてのアイテムから削除しますか？`)) {
+                    await globalDeleteTag(tag);
+                }
+            });
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            itemDiv.appendChild(nameSpan);
+            itemDiv.appendChild(actionsDiv);
+            tagManagerList.appendChild(itemDiv);
+        });
+    }
+
+    function startRenamingTag(oldTag, itemDiv) {
+        const actionsDiv = itemDiv.querySelector('.tag-manager-actions');
+        const nameSpan = itemDiv.querySelector('.tag-manager-name');
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'tag-manager-input';
+        input.value = oldTag;
+
+        nameSpan.replaceWith(input);
+        input.focus();
+
+        // Update actions to Confirm/Cancel
+        actionsDiv.innerHTML = '';
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'tag-action-btn confirm';
+        confirmBtn.innerHTML = '<span class="material-icons-round">check</span>';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'tag-action-btn';
+        cancelBtn.innerHTML = '<span class="material-icons-round">close</span>';
+
+        const doRename = async () => {
+            const newTag = input.value.trim();
+            if (newTag && newTag !== oldTag) {
+                await globalRenameTag(oldTag, newTag);
+            } else {
+                renderTagManagerList();
+            }
+        };
+
+        confirmBtn.addEventListener('click', doRename);
+        cancelBtn.addEventListener('click', () => renderTagManagerList());
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doRename();
+            if (e.key === 'Escape') renderTagManagerList();
+        });
+
+        actionsDiv.appendChild(confirmBtn);
+        actionsDiv.appendChild(cancelBtn);
+    }
+
+    async function globalRenameTag(oldTag, newTag) {
+        // Optimistic Update memory
+        items.forEach(item => {
+            if (item.tags && item.tags.includes(oldTag)) {
+                item.tags = item.tags.map(t => t === oldTag ? newTag : t);
+                item.tags = [...new Set(item.tags)]; // Handle duplicates
+            }
+        });
+
+        // Sync Filter
+        if (selectedTags.includes(oldTag)) {
+            selectedTags = selectedTags.map(t => t === oldTag ? newTag : t);
+        }
+
+        render();
+        renderTagManagerList();
+
+        // Sync with DB
+        const allItems = await db.getAllItems();
+        const itemsToUpdate = allItems.filter(item => item.tags && item.tags.includes(oldTag));
+        for (const item of itemsToUpdate) {
+            item.tags = item.tags.map(t => t === oldTag ? newTag : t);
+            item.tags = [...new Set(item.tags)];
+            await db.saveItem(item);
+        }
+    }
+
+    async function globalDeleteTag(tagName) {
+        // Optimistic Update memory
+        items.forEach(item => {
+            if (item.tags) {
+                item.tags = item.tags.filter(t => t !== tagName);
+            }
+        });
+
+        // Sync Filter
+        selectedTags = selectedTags.filter(t => t !== tagName);
+
+        render();
+        renderTagManagerList();
+
+        // Sync with DB
+        const allItems = await db.getAllItems();
+        const modified = allItems.filter(item => item.tags && item.tags.includes(tagName));
+        for (const item of modified) {
+            item.tags = item.tags.filter(t => t !== tagName);
+            await db.saveItem(item);
+        }
+    }
 
     // Link Fetching
     const linkInput = document.getElementById('linkInput');
