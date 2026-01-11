@@ -245,6 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterBar = document.getElementById('filterBar');
     const modalTagContainer = document.getElementById('modalTagContainer');
     const cardSizeSlider = document.getElementById('cardSizeSlider');
+    const cameraVideo = document.getElementById('cameraVideo');
+    const cameraCanvas = document.getElementById('cameraCanvas');
+    const captureBtn = document.getElementById('captureBtn');
 
     // Lightbox Elements
     const lightbox = document.getElementById('lightbox');
@@ -933,6 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     let currentTab = 'file';
+    let cameraStream = null;
 
     console.log('Initializing Tabs:', tabs.length);
 
@@ -947,7 +951,59 @@ document.addEventListener('DOMContentLoaded', () => {
             tabContents.forEach(c => {
                 c.id === `tab-${currentTab}` ? c.classList.add('active') : c.classList.remove('active');
             });
+
+            // Camera handling
+            if (currentTab === 'camera') {
+                startCamera();
+            } else {
+                stopCamera();
+            }
         });
+    });
+
+    async function startCamera() {
+        if (cameraStream) stopCamera();
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }, // Back camera preferred
+                audio: false
+            });
+            cameraVideo.srcObject = cameraStream;
+        } catch (err) {
+            console.error("Camera access failed", err);
+            alert("カメラへのアクセスに失敗しました。以前の許可設定を確認してください。");
+            // Jump back to file tab
+            tabs[0].click();
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+            cameraVideo.srcObject = null;
+        }
+    }
+
+    captureBtn.addEventListener('click', () => {
+        if (!cameraStream) return;
+
+        const context = cameraCanvas.getContext('2d');
+        cameraCanvas.width = cameraVideo.videoWidth;
+        cameraCanvas.height = cameraVideo.videoHeight;
+        context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+        const capturedData = cameraCanvas.toDataURL('image/jpeg', 0.8);
+
+        // Use standard compression/preview logic
+        imagePreview.src = capturedData;
+        imagePreview.classList.remove('hidden');
+        imagePreviewContainer.querySelector('span').style.opacity = '0';
+
+        // Provide feedback and switch back to file tab to show the preview?
+        // Actually, we can just show it on the card. 
+        // For UX: Switch to "file" tab so they can see the full preview and add tags/memo.
+        tabs[0].click();
     });
 
     addBtn.addEventListener('click', () => {
@@ -964,6 +1020,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeModal() {
         modal.classList.add('hidden');
+        stopCamera();
     }
 
     closeModalBtn.addEventListener('click', closeModal);

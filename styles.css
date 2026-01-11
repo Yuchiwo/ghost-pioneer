@@ -490,6 +490,64 @@ body {
     color: var(--accent-color);
 }
 
+/* Camera Support */
+.camera-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.camera-viewfinder {
+    width: 100%;
+    height: 240px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-controls {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8px;
+}
+
+.capture-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 4px solid white;
+    padding: 4px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.capture-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.capture-btn:active {
+    transform: scale(0.95);
+}
+
+.capture-inner {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 50%;
+}
+
 /* Slider Controls */
 .slider-container {
     display: flex;
