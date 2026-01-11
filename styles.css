@@ -1262,17 +1262,17 @@ textarea:focus {
     justify-content: center;
 }
 
-/* Fit Mode Override */
-.board-container.compact-mode.fit-mode .card-image-container {
+/* Fit Mode Override - Global */
+.board-container.fit-mode .card-image-container {
     aspect-ratio: auto;
 }
 
-.board-container.compact-mode.fit-mode .card-image {
+.board-container.fit-mode .card-image {
     object-fit: contain;
     width: 100%;
     height: auto;
-    max-height: 250px;
-    /* Prevent extremely tall items */
+    max-height: 500px;
+    /* Adjusted for larger cards */
 }
 
 .board-container.compact-mode .card-image {
