@@ -176,11 +176,16 @@ body {
     border-color: rgba(139, 92, 246, 0.3);
 }
 
+.active-editing.collection-card {
+    overflow: visible;
+}
+
 .card-image-container {
     width: 100%;
+    position: relative;
     aspect-ratio: 1 / 1;
     /* Square for now, or responsive */
-    border-radius: 12px;
+    border-radius: 12px 12px 0 0;
     overflow: hidden;
     margin-bottom: 12px;
     background: #000;
@@ -820,9 +825,10 @@ textarea:focus {
 }
 
 .collection-card.active-editing {
-    z-index: 100;
+    z-index: 101;
     position: relative;
     /* Ensure z-index applies */
+    overflow: visible !important;
 }
 
 .collection-card.dragging {
