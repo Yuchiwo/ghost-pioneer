@@ -951,18 +951,11 @@ textarea:focus {
 /* Tagging & Filtering **********************/
 .filter-bar {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
     padding: 10px 16px;
-    /* Add side padding for scroll start/end */
     margin-top: 10px;
-    justify-content: flex-start;
-    /* Fix: 'center' causes left-side clipping on overflow */
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+    justify-content: center;
 }
 
 .filter-bar::-webkit-scrollbar {
@@ -1187,20 +1180,8 @@ textarea:focus {
 
     .filter-bar {
         padding: 5px 12px 12px 12px;
-        display: flex;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        gap: 8px;
-        justify-content: flex-start;
-        /* CRITICAL: Prevent left clipping */
         width: 100%;
-        scrollbar-width: none;
-        /* Firefox */
-    }
-
-    .filter-bar::-webkit-scrollbar {
-        display: none;
-        /* Chrome/Safari */
+        gap: 8px;
     }
 
     .filter-pill {
