@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let items = []; // Application State (Source of Truth for rendering)
     let currentSortMode = 'custom';
-    let currentFilterTag = null;
+    let selectedTags = []; // Changed from currentFilterTag (single)
     let customOrder = []; // Array of IDs
     let currentUser = null;
     let dbMode = 'local';
@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (item) {
             item.tags = newTags;
 
-            const needsReFilter = currentFilterTag !== null;
+            const needsReFilter = selectedTags.length > 0;
             if (needsReFilter) {
                 render();
             } else {
@@ -750,8 +750,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function getDisplayItems() {
         let displayItems = [...items];
 
-        if (currentFilterTag) {
-            displayItems = displayItems.filter(item => item.tags && item.tags.includes(currentFilterTag));
+        if (selectedTags.length > 0) {
+            displayItems = displayItems.filter(item =>
+                item.tags && selectedTags.every(tag => item.tags.includes(tag))
+            );
         }
 
         if (currentSortMode !== 'custom') {
@@ -776,8 +778,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (displayItems.length === 0) {
             emptyState.classList.remove('hidden');
-            if (currentFilterTag) {
-                emptyState.querySelector('p').innerHTML = `タグ「#${currentFilterTag}」がついた<br>アイテムはありません。`;
+            if (selectedTags.length > 0) {
+                const tagList = selectedTags.map(t => `#${t}`).join(', ');
+                emptyState.querySelector('p').innerHTML = `タグ「${tagList}」がすべてついた<br>アイテムはありません。`;
             } else {
                 emptyState.querySelector('p').innerHTML = `まだコレクションがありません。<br>右下のボタンから追加してみましょう！`;
             }
@@ -796,20 +799,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (allTags.length === 0) return;
 
         const allBtn = document.createElement('button');
-        allBtn.className = `filter-pill ${currentFilterTag === null ? 'active' : ''}`;
+        allBtn.className = `filter-pill ${selectedTags.length === 0 ? 'active' : ''}`;
         allBtn.textContent = 'すべて';
         allBtn.addEventListener('click', () => {
-            currentFilterTag = null;
+            selectedTags = [];
             render();
         });
         filterBar.appendChild(allBtn);
 
         allTags.forEach(tag => {
             const btn = document.createElement('button');
-            btn.className = `filter-pill ${currentFilterTag === tag ? 'active' : ''}`;
+            const isActive = selectedTags.includes(tag);
+            btn.className = `filter-pill ${isActive ? 'active' : ''}`;
             btn.textContent = `#${tag}`;
             btn.addEventListener('click', () => {
-                currentFilterTag = tag;
+                if (isActive) {
+                    selectedTags = selectedTags.filter(t => t !== tag);
+                } else {
+                    selectedTags.push(tag);
+                }
                 render();
             });
             filterBar.appendChild(btn);
@@ -820,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = 'collection-card';
 
-        const isCustomAndNoFilter = currentSortMode === 'custom' && currentFilterTag === null;
+        const isCustomAndNoFilter = currentSortMode === 'custom' && selectedTags.length === 0;
 
         if (isCustomAndNoFilter) {
             div.draggable = true;
