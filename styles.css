@@ -478,7 +478,8 @@ body {
     overflow: hidden;
 }
 
-.image-upload-label:hover {
+.image-upload-label:hover,
+.image-upload-label.dragging {
     border-color: var(--accent-color);
     background: rgba(139, 92, 246, 0.05);
     color: var(--accent-color);

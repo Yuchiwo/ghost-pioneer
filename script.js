@@ -1052,6 +1052,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Drag and Drop support
+    imagePreviewContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        imagePreviewContainer.classList.add('dragging');
+    });
+
+    imagePreviewContainer.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        imagePreviewContainer.classList.remove('dragging');
+    });
+
+    imagePreviewContainer.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        imagePreviewContainer.classList.remove('dragging');
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            try {
+                const compressedBase64 = await compressImage(file);
+                imagePreview.src = compressedBase64;
+                imagePreview.classList.remove('hidden');
+                imagePreviewContainer.querySelector('span').style.opacity = '0';
+            } catch (err) {
+                console.error("Compression failed", err);
+                alert("画像の処理に失敗しました。");
+            }
+        }
+    });
+
     function resetImagePreview() {
         imagePreview.src = '';
         imagePreview.classList.add('hidden');
