@@ -254,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tagManagerModal = document.getElementById('tagManagerModal');
     const closeTagManagerBtn = document.getElementById('closeTagManagerBtn');
     const tagManagerList = document.getElementById('tagManagerList');
+    const editImageInput = document.getElementById('editImageInput');
+    let editingItemId = null;
 
     // Lightbox Elements
     const lightbox = document.getElementById('lightbox');
@@ -875,9 +877,16 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<div class="card-link-icon"><span class="material-icons-round" style="font-size: 14px;">link</span></div>`
             : '';
 
+        const editImgBtnHtml = `
+            <button class="edit-img-overlay-btn" title="画像を変更" aria-label="画像を変更">
+                <span class="material-icons-round">edit</span>
+            </button>
+        `;
+
         div.innerHTML = `
             <div class="card-image-container">
                 ${linkIconHtml}
+                ${editImgBtnHtml}
                 <img src="${item.image}" alt="collection item" class="card-image" loading="lazy">
             </div>
             <div class="card-content">
@@ -912,6 +921,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 openLightbox(item.image);
             }
+        });
+
+        const editImgBtn = div.querySelector('.edit-img-overlay-btn');
+        editImgBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            editingItemId = item.id;
+            editImageInput.click();
         });
 
         const memoP = div.querySelector('.card-memo');
@@ -1204,6 +1220,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInput = document.getElementById('linkInput');
     const fetchLinkBtn = document.getElementById('fetchLinkBtn');
     const linkStatus = document.getElementById('linkPreviewStatus');
+
+    editImageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file || !editingItemId) return;
+
+        try {
+            const compressed = await compressImage(file);
+            const item = items.find(i => i.id === editingItemId);
+            if (item) {
+                item.image = compressed;
+                await db.saveItem(item);
+                render();
+            }
+        } catch (err) {
+            console.error("Image update failed", err);
+            alert("画像の更新に失敗しました。");
+        } finally {
+            editImageInput.value = '';
+            editingItemId = null;
+        }
+    });
 
     async function fetchLinkInfo() {
         const url = linkInput.value.trim();
