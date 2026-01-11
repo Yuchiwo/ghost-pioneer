@@ -255,6 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeTagManagerBtn = document.getElementById('closeTagManagerBtn');
     const tagManagerList = document.getElementById('tagManagerList');
     const editImageInput = document.getElementById('editImageInput');
+    const modalTitle = document.querySelector('#itemModal h2');
+    const modalSubmitBtnText = document.querySelector('.submit-btn span');
     let editingItemId = null;
 
     // Lightbox Elements
@@ -979,8 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editImgBtn = div.querySelector('.edit-img-overlay-btn');
         editImgBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            editingItemId = item.id;
-            editImageInput.click();
+            openEditModal(item);
         });
 
         const memoP = div.querySelector('.card-memo');
@@ -1109,6 +1110,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     addBtn.addEventListener('click', () => {
+        editingItemId = null;
+        modalTitle.textContent = '新規コレクション';
+        modalSubmitBtnText.textContent = 'ボードに貼る';
+
         modal.classList.remove('hidden');
         addForm.reset();
         resetImagePreview();
@@ -1119,6 +1124,46 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTab = 'file';
         tabs[0].click();
     });
+
+    function openEditModal(item) {
+        editingItemId = item.id;
+        modalTitle.textContent = 'コレクションを編集';
+        modalSubmitBtnText.textContent = '変更を保存';
+
+        modal.classList.remove('hidden');
+        addForm.reset();
+
+        // Populate Image
+        imagePreview.src = item.image;
+        imagePreview.classList.remove('hidden');
+        imagePreviewContainer.querySelectorAll('span').forEach(s => s.style.opacity = '0');
+
+        // Populate Tags
+        modalTagManager.reset();
+        if (item.tags) {
+            item.tags.forEach(tag => modalTagManager.addTag(tag));
+        }
+
+        // Populate Memo
+        document.getElementById('memoInput').value = item.memo || '';
+
+        // Populate Rating
+        const ratingInput = document.getElementById(`star${item.rating || 3}`);
+        if (ratingInput) ratingInput.checked = true;
+
+        // Populate Link if exists
+        const linkInputEl = document.getElementById('linkInput');
+        if (linkInputEl) linkInputEl.value = item.link || '';
+
+        // Determine Tab
+        if (item.link) {
+            currentTab = 'link';
+            tabs[2].click();
+        } else {
+            currentTab = 'file';
+            tabs[0].click();
+        }
+    }
 
     function closeModal() {
         modal.classList.add('hidden');
@@ -1457,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return canvas.toDataURL('image/png');
     }
 
-    addForm.addEventListener('submit', (e) => {
+    addForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const memo = document.getElementById('memoInput').value;
@@ -1499,18 +1544,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const newItem = {
-            id: Date.now().toString(),
-            image: finalImage,
-            memo: memo,
-            rating: rating,
-            tags: tags,
-            link: linkUrl,
-            createdAt: new Date().toISOString()
-        };
+        if (editingItemId) {
+            // Edit Mode
+            const item = items.find(i => i.id === editingItemId);
+            if (item) {
+                item.image = finalImage;
+                item.memo = memo;
+                item.rating = rating;
+                item.tags = tags;
+                item.link = linkUrl;
 
-        console.log('Adding Item:', newItem.id);
-        addItem(newItem);
+                await db.saveItem(item);
+                render(); // Full render to ensure everything updates (or targeted if we want, but render is safer here after modal)
+            }
+        } else {
+            // Add Mode
+            const newItem = {
+                id: Date.now().toString(),
+                image: finalImage,
+                memo: memo,
+                rating: rating,
+                tags: tags,
+                link: linkUrl,
+                createdAt: new Date().toISOString()
+            };
+
+            console.log('Adding Item:', newItem.id);
+            addItem(newItem);
+        }
+
         closeModal();
     });
 
