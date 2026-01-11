@@ -1001,6 +1001,20 @@ textarea:focus {
     box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);
 }
 
+.filter-pill.multi-toggle {
+    display: flex;
+    align-items: center;
+    border-style: dashed;
+}
+
+.filter-pill.multi-toggle.active {
+    border-style: solid;
+    background: #64748b;
+    /* A more neutral active color for the mode toggle */
+    border-color: #64748b;
+    box-shadow: none;
+}
+
 /* Chip Input Styles */
 .tag-input-container {
     display: flex;
@@ -1242,6 +1256,23 @@ textarea:focus {
     height: 100%;
     aspect-ratio: 1/1;
     border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fit Mode Override */
+.board-container.compact-mode.fit-mode .card-image-container {
+    aspect-ratio: auto;
+}
+
+.board-container.compact-mode.fit-mode .card-image {
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+    /* Prevent extremely tall items */
 }
 
 .board-container.compact-mode .card-image {

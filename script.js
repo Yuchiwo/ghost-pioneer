@@ -269,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let customOrder = []; // Array of IDs
     let currentUser = null;
     let dbMode = 'local';
+    let isMultiSelectMode = false;
 
     // --- Card Size Logic ---
     function initCardSize() {
@@ -316,6 +317,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     initCardSize();
+
+    // --- Image Fit Mode (Compact Only) ---
+    const toggleFitBtn = document.getElementById('toggleFitBtn');
+    let isFitMode = localStorage.getItem('compactFitMode') === 'true';
+
+    function updateFitModeUI() {
+        if (isFitMode) {
+            board.classList.add('fit-mode');
+            toggleFitBtn.classList.add('active');
+        } else {
+            board.classList.remove('fit-mode');
+            toggleFitBtn.classList.remove('active');
+        }
+        localStorage.setItem('compactFitMode', isFitMode);
+    }
+
+    toggleFitBtn.addEventListener('click', () => {
+        isFitMode = !isFitMode;
+        updateFitModeUI();
+    });
+
+    // Initialize Fit Mode
+    updateFitModeUI();
 
     // --- Backup & Restore Logic ---
     const backupBtn = document.getElementById('backupBtn');
@@ -815,16 +839,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         filterBar.appendChild(allBtn);
 
+        // Multi-select Mode Toggle
+        const multiToggleBtn = document.createElement('button');
+        multiToggleBtn.className = `filter-pill multi-toggle ${isMultiSelectMode ? 'active' : ''}`;
+        multiToggleBtn.innerHTML = `<span class="material-icons-round" style="font-size: 16px; margin-right: 4px;">${isMultiSelectMode ? 'done_all' : 'checklist'}</span>複数`;
+        multiToggleBtn.title = "複数選択モード";
+        multiToggleBtn.addEventListener('click', () => {
+            isMultiSelectMode = !isMultiSelectMode;
+            renderFilterBar(); // Re-render only bar to update toggle state
+        });
+        filterBar.appendChild(multiToggleBtn);
+
         allTags.forEach(tag => {
             const btn = document.createElement('button');
             const isActive = selectedTags.includes(tag);
             btn.className = `filter-pill ${isActive ? 'active' : ''}`;
             btn.textContent = `#${tag}`;
-            btn.addEventListener('click', () => {
-                if (isActive) {
-                    selectedTags = selectedTags.filter(t => t !== tag);
+            btn.addEventListener('click', (e) => {
+                const isMulti = e.ctrlKey || e.metaKey || isMultiSelectMode;
+
+                if (isMulti) {
+                    // Multi-selection (Toggle)
+                    if (isActive) {
+                        selectedTags = selectedTags.filter(t => t !== tag);
+                    } else {
+                        selectedTags.push(tag);
+                    }
                 } else {
-                    selectedTags.push(tag);
+                    // Single-selection (Exclusive)
+                    if (isActive && selectedTags.length === 1) {
+                        selectedTags = [];
+                    } else {
+                        selectedTags = [tag];
+                    }
                 }
                 render();
             });
