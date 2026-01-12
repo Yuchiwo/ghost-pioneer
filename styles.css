@@ -1106,6 +1106,17 @@ textarea:focus {
     color: white;
 }
 
+[data-theme="light"] .filter-pill {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .filter-pill:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+}
+
 .tag-input-field {
     background: transparent;
     border: none;
@@ -1171,6 +1182,12 @@ textarea:focus {
     padding: 2px 8px;
     border-radius: 10px;
     font-family: var(--font-jp);
+}
+
+[data-theme="light"] .tag-badge {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 600px) {
