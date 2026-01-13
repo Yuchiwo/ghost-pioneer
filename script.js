@@ -945,12 +945,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
         `;
 
-        div.innerHTML = `
+        let imageContainerHtml = '';
+        if (item.image) {
+            imageContainerHtml = `
             <div class="card-image-container">
                 ${linkIconHtml}
                 ${editImgBtnHtml}
                 <img src="${item.image}" alt="collection item" class="card-image" loading="lazy">
-            </div>
+            </div>`;
+        }
+
+        div.innerHTML = `
+            ${imageContainerHtml}
             <div class="card-content">
                 <div class="card-date">${dateStr}</div>
                 ${tagsHtml}
@@ -977,20 +983,24 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.addEventListener('click', () => deleteItem(item.id));
 
         const img = div.querySelector('.card-image');
-        img.addEventListener('click', () => {
-            if (item.link) {
-                window.open(item.link, '_blank');
-            } else {
-                openLightbox(item.image);
-            }
-        });
+        if (img) {
+            img.addEventListener('click', () => {
+                if (item.link) {
+                    window.open(item.link, '_blank');
+                } else {
+                    openLightbox(item.image);
+                }
+            });
+        }
 
         const editImgBtn = div.querySelector('.edit-img-overlay-btn');
-        editImgBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            editingItemId = item.id;
-            editImageInput.click();
-        });
+        if (editImgBtn) {
+            editImgBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editingItemId = item.id;
+                editImageInput.click();
+            });
+        }
 
         const memoP = div.querySelector('.card-memo');
         memoP.addEventListener('click', () => startEditingMemo(item.id, memoP));
@@ -1502,9 +1512,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // File or Camera Tab (Camera switches to File after capture)
-            if (!finalImage || finalImage === window.location.href || imagePreview.classList.contains('hidden')) {
-                alert('画像を選択、またはカメラで撮影してください');
+            const hasImage = finalImage && finalImage !== window.location.href && !imagePreview.classList.contains('hidden');
+
+            if (!hasImage && !memo.trim()) {
+                alert('画像を選択するか、メモを入力してください');
                 return;
+            }
+
+            if (!hasImage) {
+                finalImage = null;
             }
         }
 
